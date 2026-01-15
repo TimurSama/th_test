@@ -3,9 +3,7 @@ name: Deploy Mini App to GitHub Pages
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'webapp/static/**'
-      - '.github/workflows/deploy_miniapp.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read
