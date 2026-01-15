@@ -96,10 +96,14 @@ body {
     margin-bottom: 20px;
 }
 
-.price-columns-container {
+.price-columns-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 20px;
+    width: 100%;
+}
+
+.price-column-container {
     width: 100%;
 }
 

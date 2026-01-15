@@ -295,8 +295,10 @@ function loadDashboard() {
         });
         
         columnContainer.appendChild(priceList);
-        dashboardGrid.appendChild(columnContainer);
+        columnsContainer.appendChild(columnContainer);
     });
+    
+    dashboardGrid.appendChild(columnsContainer);
 }
 
 function loadMarket() {
