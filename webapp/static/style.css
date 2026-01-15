@@ -642,3 +642,20 @@ code {
     margin-top: 60px;
 }
 
+.partnership-info {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.partnership-section {
+    background: var(--bg-darker);
+    border: 1px solid var(--border-color);
+    padding: 25px;
+    border-radius: 4px;
+}
+
+.giveaway-item {
+    margin-bottom: 20px;
+}
+

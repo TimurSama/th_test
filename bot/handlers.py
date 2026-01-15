@@ -172,12 +172,22 @@ async def referral_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot_username = context.bot.username or "your_bot"
     referral_link = f"https://t.me/{bot_username}?start=ref_{referral_code}"
     
+    # Calculate bonuses
+    referral_count = stats['referral_count']
+    free_months = referral_count // 10
+    usdt_bonus = (referral_count // 100) * 15
+    
     message = "REFERRAL SYSTEM\n\n"
-    message += "Invite new nodes into the network.\n\n"
-    message += "Earn bonuses for every active referral.\n"
-    message += "The deeper your network — the higher your influence.\n\n"
-    message += f"Your referrals: {stats['referral_count']}\n\n"
-    message += f"Invite link:\n{referral_link}"
+    message += "Invite new nodes into the network.\n"
+    message += "Earn bonuses for every active referral.\n\n"
+    message += f"<b>Your referrals:</b> {referral_count}\n\n"
+    message += "<b>BONUSES:</b>\n"
+    message += "• Every 10 referrals → 1 month FREE\n"
+    message += "• Every 100 referrals → 15 USDT\n\n"
+    message += f"<b>Earned:</b>\n"
+    message += f"• Free months: {free_months}\n"
+    message += f"• USDT bonus: {usdt_bonus} USDT\n\n"
+    message += f"<b>Invite link:</b>\n<code>{referral_link}</code>"
     
     keyboard = [
         [InlineKeyboardButton("COPY INVITE LINK", callback_data=f"copy_link_{user_id}")],
@@ -186,7 +196,7 @@ async def referral_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
-    await query.edit_message_text(message, reply_markup=reply_markup)
+    await query.edit_message_text(message, reply_markup=reply_markup, parse_mode='HTML')
 
 
 async def giveaways_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -195,27 +205,48 @@ async def giveaways_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
     await query.answer()
     
     from database import Giveaway
+    from datetime import datetime
     
     async with aiosqlite.connect(DATABASE_PATH) as db:
         giveaways = await Giveaway.get_active(db)
     
+    # Add default giveaways if none exist
     if not giveaways:
-        message = "GIVEAWAYS\n\n"
+        giveaways = [
+            {
+                'title': '🎁 Розыгрыш за активных друзей',
+                'description': 'Пригласи 5 друзей на уровень PRO и участвуй в розыгрыше 200 USDT. 5 случайных участников получат по 40 USDT.',
+                'prize': '200 USDT (5 победителей)',
+                'requirement': 'Пригласить 5 друзей с подпиской PRO'
+            },
+            {
+                'title': '📢 Розыгрыш за подписку',
+                'description': 'Подпишись на новостной канал и чат канал TokenHunter. 10 случайных участников получат по 10 USDT.',
+                'prize': '100 USDT (10 победителей)',
+                'requirement': 'Подписка на новостной канал и чат канал'
+            }
+        ]
+    
+    if not giveaways:
+        message = "<b>GIVEAWAYS</b>\n\n"
         message += "No active giveaways at the moment.\n\n"
         message += "The network is preparing new opportunities."
     else:
-        message = "GIVEAWAYS\n\n"
+        message = "<b>GIVEAWAYS</b>\n\n"
         for giveaway in giveaways:
-            message += f"ACTIVE GIVEAWAY\n"
-            message += f"Prize: {giveaway['prize']}\n"
-            message += f"Ends in: {giveaway['end_date']}\n\n"
+            message += f"<b>{giveaway.get('title', 'GIVEAWAY')}</b>\n"
+            message += f"{giveaway.get('description', '')}\n\n"
+            message += f"<b>Prize:</b> {giveaway.get('prize', giveaway.get('prize', 'N/A'))}\n"
+            if 'requirement' in giveaway:
+                message += f"<b>Requirement:</b> {giveaway['requirement']}\n"
+            message += "\n"
     
     keyboard = [
         [InlineKeyboardButton("← Back", callback_data="main_menu")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
-    await query.edit_message_text(message, reply_markup=reply_markup)
+    await query.edit_message_text(message, reply_markup=reply_markup, parse_mode='HTML')
 
 
 async def main_menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):

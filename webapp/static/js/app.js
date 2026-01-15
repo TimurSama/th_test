@@ -167,16 +167,26 @@ const MARKET_DATA = {
     },
     giveaways: [
         {
-            title: '🎁 Premium Subscription Giveaway',
-            description: 'Win 1 month of Premium access! Join now and get a chance to win.',
-            prize: '1 Month Premium',
-            status: 'active'
+            id: 1,
+            title: '🎁 Розыгрыш за активных друзей',
+            description: 'Пригласи 5 друзей на уровень PRO и участвуй в розыгрыше 200 USDT. 5 случайных участников получат по 40 USDT.',
+            prize: '200 USDT (5 победителей)',
+            status: 'active',
+            type: 'referral_pro',
+            requirement: 'Пригласить 5 друзей с подпиской PRO',
+            participants: 127,
+            ends_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
         },
         {
-            title: '💰 $100 USDT Giveaway',
-            description: 'Massive giveaway! 10 winners will share $100 USDT.',
-            prize: '$100 USDT',
-            status: 'active'
+            id: 2,
+            title: '📢 Розыгрыш за подписку',
+            description: 'Подпишись на новостной канал и чат канал TokenHunter. 10 случайных участников получат по 10 USDT.',
+            prize: '100 USDT (10 победителей)',
+            status: 'active',
+            type: 'subscription',
+            requirement: 'Подписка на новостной канал и чат канал',
+            participants: 89,
+            ends_at: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString()
         }
     ],
     news: [
@@ -527,17 +537,33 @@ function loadGiveaways() {
 
     let html = '';
     data.forEach(giveaway => {
-        html += `<div class="signal-item">
+        const endDate = new Date(giveaway.ends_at);
+        const daysLeft = Math.ceil((endDate - new Date()) / (1000 * 60 * 60 * 24));
+        
+        html += `<div class="signal-item giveaway-item">
             <div class="signal-header">
                 <div class="signal-symbol">${giveaway.title}</div>
-                <div class="signal-exchange">${giveaway.status.toUpperCase()}</div>
+                <div class="signal-exchange">${daysLeft} дней</div>
             </div>
             <p style="color: var(--text-secondary); margin-top: 10px;">${giveaway.description || ''}</p>
-            <p style="color: var(--neon-green); margin-top: 10px;">Prize: ${giveaway.prize}</p>
+            <div style="margin-top: 15px; padding: 10px; background: var(--bg-darker); border-left: 3px solid var(--neon-green);">
+                <p style="color: var(--neon-green); font-weight: bold; margin-bottom: 5px;">Приз: ${giveaway.prize}</p>
+                <p style="color: var(--text-secondary); font-size: 0.9em; margin-bottom: 5px;">Условие: ${giveaway.requirement}</p>
+                <p style="color: var(--text-secondary); font-size: 0.85em;">Участников: ${giveaway.participants}</p>
+            </div>
+            <button class="upgrade-btn" style="margin-top: 15px; width: 100%;" onclick="participateGiveaway(${giveaway.id})">Участвовать</button>
         </div>`;
     });
     
     document.getElementById('giveaways-content').innerHTML = html;
+}
+
+function participateGiveaway(giveawayId) {
+    if (tg && tg.showAlert) {
+        tg.showAlert('Участие в розыгрыше подтверждено!');
+    } else {
+        alert('Участие в розыгрыше подтверждено!');
+    }
 }
 
 function loadNews() {
@@ -562,6 +588,50 @@ function loadNews() {
     document.getElementById('news-content').innerHTML = html;
 }
 
+function loadPartnership() {
+    let html = '<div class="partnership-info">';
+    html += '<div class="partnership-section">';
+    html += '<h3 style="color: var(--neon-green); margin-bottom: 15px;">Для инфлюенсеров и блогеров</h3>';
+    html += '<p style="color: var(--text-secondary); margin-bottom: 20px;">Станьте партнером TokenHunter и получайте комиссию за каждого привлеченного пользователя.</p>';
+    html += '<ul class="features-list" style="margin-bottom: 20px;">';
+    html += '<li>Уникальная реферальная ссылка</li>';
+    html += '<li>Отслеживание конверсий в реальном времени</li>';
+    html += '<li>Выплаты каждую неделю</li>';
+    html += '<li>Персональная поддержка</li>';
+    html += '</ul>';
+    html += '<button class="upgrade-btn" onclick="contactPartnership()">Связаться с нами</button>';
+    html += '</div>';
+    
+    html += '<div class="partnership-section" style="margin-top: 30px;">';
+    html += '<h3 style="color: var(--neon-green); margin-bottom: 15px;">Для трейдеров</h3>';
+    html += '<p style="color: var(--text-secondary); margin-bottom: 20px;">Публикуйте свои сигналы и аналитику в TokenHunter. Получайте подписчиков и монетизируйте свой опыт.</p>';
+    html += '<ul class="features-list" style="margin-bottom: 20px;">';
+    html += '<li>Публикация торговых сигналов</li>';
+    html += '<li>Аналитика и прогнозы</li>';
+    html += '<li>Монетизация контента</li>';
+    html += '<li>Статистика и аналитика</li>';
+    html += '</ul>';
+    html += '<button class="upgrade-btn" onclick="contactPartnership()">Стать трейдером</button>';
+    html += '</div>';
+    
+    html += '<div class="partnership-section" style="margin-top: 30px; padding: 20px; background: var(--bg-darker); border: 1px solid var(--neon-green);">';
+    html += '<h3 style="color: var(--neon-green); margin-bottom: 15px;">Контакты</h3>';
+    html += '<p style="color: var(--text-secondary);">Email: partners@tokenhunter.net</p>';
+    html += '<p style="color: var(--text-secondary);">Telegram: @tokenhunter_partners</p>';
+    html += '</div>';
+    
+    html += '</div>';
+    document.getElementById('partnership-content').innerHTML = html;
+}
+
+function contactPartnership() {
+    if (tg && tg.openTelegramLink) {
+        tg.openTelegramLink('https://t.me/tokenhunter_partners');
+    } else {
+        window.open('https://t.me/tokenhunter_partners', '_blank');
+    }
+}
+
 function loadSectionData(sectionId) {
     switch(sectionId) {
         case 'dashboard':
@@ -581,6 +651,9 @@ function loadSectionData(sectionId) {
             break;
         case 'giveaways':
             loadGiveaways();
+            break;
+        case 'partnership':
+            loadPartnership();
             break;
         case 'news':
             loadNews();
