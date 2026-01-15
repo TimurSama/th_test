@@ -534,5 +534,14 @@ function formatVolume(volume) {
     return volume.toFixed(2);
 }
 
+// Initialize dashboard when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(loadDashboard, 100);
+    });
+} else {
+    setTimeout(loadDashboard, 100);
+}
+
 // Initialize dashboard on load
 loadDashboard();
