@@ -249,6 +249,10 @@ function loadDashboard() {
     `;
     dashboardGrid.appendChild(statsRow);
     
+    // Create price columns container
+    const columnsContainer = document.createElement('div');
+    columnsContainer.className = 'price-columns-grid';
+    
     // Create price columns for each symbol
     const symbols = Object.keys(priceData).slice(0, 8); // Top 8 symbols
     
