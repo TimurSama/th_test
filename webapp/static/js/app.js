@@ -211,6 +211,25 @@ function showSection(sectionId) {
     loadSectionData(sectionId);
 }
 
+function createMatrixRain(container, duration = 2000) {
+    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ$%&*';
+    const charCount = 50;
+    
+    for (let i = 0; i < charCount; i++) {
+        const char = document.createElement('div');
+        char.className = 'matrix-char';
+        char.textContent = chars[Math.floor(Math.random() * chars.length)];
+        char.style.left = Math.random() * 100 + '%';
+        char.style.animationDelay = Math.random() * 2 + 's';
+        char.style.animationDuration = (2 + Math.random() * 2) + 's';
+        container.appendChild(char);
+    }
+    
+    setTimeout(() => {
+        container.innerHTML = '';
+    }, duration);
+}
+
 function loadDashboard() {
     try {
         const data = MARKET_DATA.dashboard;
@@ -223,7 +242,19 @@ function loadDashboard() {
             return;
         }
         
-        dashboardGrid.innerHTML = ''; // Clear existing content
+        // Add loading animation
+        dashboardGrid.classList.add('loading');
+        
+        // Create matrix rain overlay
+        const matrixOverlay = document.createElement('div');
+        matrixOverlay.className = 'matrix-overlay';
+        document.body.appendChild(matrixOverlay);
+        createMatrixRain(matrixOverlay, 2000);
+        
+        // Clear content after animation starts
+        setTimeout(() => {
+            dashboardGrid.innerHTML = ''; // Clear existing content
+            dashboardGrid.classList.remove('loading');
     
     // Add stats row
     const statsRow = document.createElement('div');
@@ -289,23 +320,53 @@ function loadDashboard() {
             
             const priceItem = document.createElement('div');
             priceItem.className = `price-item ${isBest ? 'best-price' : ''}`;
+            priceItem.style.opacity = '0';
+            priceItem.style.transform = 'translateY(-30px)';
             priceItem.innerHTML = `
                 <div class="exchange-name">${exData.exchange.toUpperCase()}</div>
                 <div class="price-value">$${exData.price.toFixed(2)}</div>
                 <div class="price-change ${changeClass}">${changeStr}</div>
             `;
             priceList.appendChild(priceItem);
+            
+            // Animate item appearing
+            setTimeout(() => {
+                priceItem.style.transition = 'all 0.4s ease-out';
+                priceItem.style.opacity = '1';
+                priceItem.style.transform = 'translateY(0)';
+            }, 50 * index);
         });
         
         columnContainer.appendChild(priceList);
         columnsContainer.appendChild(columnContainer);
     });
     
-        dashboardGrid.appendChild(columnsContainer);
+            dashboardGrid.appendChild(columnsContainer);
+            
+            // Animate columns appearing
+            const columns = columnsContainer.querySelectorAll('.price-column-container');
+            columns.forEach((col, index) => {
+                col.style.opacity = '0';
+                col.style.transform = 'translateY(-50px)';
+                setTimeout(() => {
+                    col.style.transition = 'all 0.6s ease-out';
+                    col.style.opacity = '1';
+                    col.style.transform = 'translateY(0)';
+                }, 100 * index);
+            });
+            
+            // Remove matrix overlay after animation
+            setTimeout(() => {
+                if (matrixOverlay.parentNode) {
+                    matrixOverlay.parentNode.removeChild(matrixOverlay);
+                }
+            }, 2500);
+        }, 500);
     } catch (error) {
         console.error('Error loading dashboard:', error);
         const dashboardGrid = document.getElementById('dashboard-grid');
         if (dashboardGrid) {
+            dashboardGrid.classList.remove('loading');
             dashboardGrid.innerHTML = '<p style="color: #ff4444;">Error loading dashboard data</p>';
         }
     }
