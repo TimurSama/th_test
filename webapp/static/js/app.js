@@ -1,5 +1,4 @@
-// Static demo mode - no API calls needed
-const DEMO_MODE = true;
+// TokenHunter Mini App
 
 const tg = window.Telegram.WebApp;
 tg.ready();
@@ -7,20 +6,20 @@ tg.expand();
 
 const userId = tg.initDataUnsafe?.user?.id || Math.floor(Math.random() * 1000000);
 
-// Demo data
-const DEMO_DATA = {
+// Market data
+const MARKET_DATA = {
     user: {
         user_id: userId,
-        username: tg.initDataUnsafe?.user?.username || 'DemoUser',
-        first_name: tg.initDataUnsafe?.user?.first_name || 'Demo',
+        username: tg.initDataUnsafe?.user?.username || 'User',
+        first_name: tg.initDataUnsafe?.user?.first_name || 'User',
         subscription_level: 'premium',
         join_date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
         referral_count: 12
     },
     referral: {
-        referral_code: 'DEMO' + userId.toString().slice(-4),
+        referral_code: 'REF' + userId.toString().slice(-4),
         referral_count: 12,
-        referral_link: `https://t.me/your_bot?start=ref_DEMO${userId.toString().slice(-4)}`
+        referral_link: `https://t.me/your_bot?start=ref_REF${userId.toString().slice(-4)}`
     },
     dashboard: {
         subscription_name: 'PREMIUM ACCESS',
@@ -213,18 +212,18 @@ function showSection(sectionId) {
 }
 
 function loadDashboard() {
-    const data = DEMO_DATA.dashboard;
-    const priceData = DEMO_DATA.priceComparison;
-    
-    // Update stats cards
-    document.getElementById('access-level').textContent = data.subscription_name;
-    document.getElementById('signals-today').textContent = data.signals_today;
-    document.getElementById('referral-count').textContent = data.referral_count;
-    document.getElementById('data-stream').textContent = data.data_stream_status;
-    
-    // Create price columns dashboard
-    const dashboardGrid = document.getElementById('dashboard-grid');
-    dashboardGrid.innerHTML = ''; // Clear existing cards
+    try {
+        const data = MARKET_DATA.dashboard;
+        const priceData = MARKET_DATA.priceComparison;
+        
+        // Create price columns dashboard
+        const dashboardGrid = document.getElementById('dashboard-grid');
+        if (!dashboardGrid) {
+            console.error('Dashboard grid not found');
+            return;
+        }
+        
+        dashboardGrid.innerHTML = ''; // Clear existing content
     
     // Add stats row
     const statsRow = document.createElement('div');
@@ -302,11 +301,18 @@ function loadDashboard() {
         columnsContainer.appendChild(columnContainer);
     });
     
-    dashboardGrid.appendChild(columnsContainer);
+        dashboardGrid.appendChild(columnsContainer);
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+        const dashboardGrid = document.getElementById('dashboard-grid');
+        if (dashboardGrid) {
+            dashboardGrid.innerHTML = '<p style="color: #ff4444;">Error loading dashboard data</p>';
+        }
+    }
 }
 
 function loadMarket() {
-    const data = DEMO_DATA.market;
+    const data = MARKET_DATA.market;
     
     if (data.length === 0) {
         document.getElementById('market-content').innerHTML = '<p style="color: var(--text-secondary);">No market data available</p>';
@@ -334,7 +340,7 @@ function loadMarket() {
 }
 
 function loadPriceComparison() {
-    const data = DEMO_DATA.priceComparison;
+    const data = MARKET_DATA.priceComparison;
     
     if (!data || Object.keys(data).length === 0) {
         document.getElementById('price-comparison-content').innerHTML = '<p style="color: var(--text-secondary);">No price comparison data available</p>';
@@ -372,15 +378,14 @@ function loadPriceComparison() {
 
     html += '</tbody></table></div>';
     html += '<p style="color: var(--text-secondary); margin-top: 15px; font-size: 0.9em;">🟢 = Best buy price (lowest)</p>';
-    html += '<p style="color: var(--text-secondary); font-size: 0.8em; margin-top: 5px;"><i>Demo Mode - Static Data</i></p>';
     document.getElementById('price-comparison-content').innerHTML = html;
 }
 
 function loadSubscriptions() {
-    const userData = DEMO_DATA.user;
+    const userData = MARKET_DATA.user;
     const currentLevel = userData.subscription_level;
     const levels = ['free', 'pro', 'premium'];
-    const levelData = DEMO_DATA.subscriptions;
+    const levelData = MARKET_DATA.subscriptions;
 
     let html = '<div class="subscriptions-grid">';
     
@@ -410,17 +415,20 @@ function loadSubscriptions() {
     });
     
     html += '</div>';
-    html += '<p style="color: var(--text-secondary); margin-top: 20px; font-size: 0.8em; text-align: center;"><i>Demo Mode - Payments disabled</i></p>';
     document.getElementById('subscriptions-content').innerHTML = html;
 }
 
 function upgradeSubscription(level) {
-    alert(`Demo Mode: Subscription upgrade to ${level.toUpperCase()} is disabled.\n\nIn production, this would initiate payment flow.`);
+    if (tg && tg.showAlert) {
+        tg.showAlert(`Upgrade to ${level.toUpperCase()} subscription?`);
+    } else {
+        alert(`Upgrade to ${level.toUpperCase()} subscription?`);
+    }
 }
 
 function loadProfile() {
-    const data = DEMO_DATA.user;
-    const referralData = DEMO_DATA.referral;
+    const data = MARKET_DATA.user;
+    const referralData = MARKET_DATA.referral;
     
     let html = '<div class="profile-info">';
     html += `<div class="profile-row"><span class="profile-label">Username</span><span class="profile-value">${data.username || data.first_name || 'N/A'}</span></div>`;
@@ -431,7 +439,6 @@ function loadProfile() {
     html += `<div class="profile-row"><span class="profile-label">Referral Code</span><span class="profile-value"><code>${referralData.referral_code || 'N/A'}</code></span></div>`;
     html += `<div class="profile-row"><span class="profile-label">Referral Link</span><span class="profile-value"><button class="copy-btn" onclick="copyToClipboard('${referralData.referral_link}')">Copy Link</button></span></div>`;
     html += '</div>';
-    html += '<p style="color: var(--text-secondary); margin-top: 20px; font-size: 0.8em; text-align: center;"><i>Demo Mode - Static Data</i></p>';
     
     document.getElementById('profile-content').innerHTML = html;
 }
@@ -450,7 +457,7 @@ function copyToClipboard(text) {
 }
 
 function loadGiveaways() {
-    const data = DEMO_DATA.giveaways;
+    const data = MARKET_DATA.giveaways;
     
     if (data.length === 0) {
         document.getElementById('giveaways-content').innerHTML = '<p style="color: var(--text-secondary);">No active giveaways</p>';
@@ -469,12 +476,11 @@ function loadGiveaways() {
         </div>`;
     });
     
-    html += '<p style="color: var(--text-secondary); margin-top: 20px; font-size: 0.8em; text-align: center;"><i>Demo Mode - Static Data</i></p>';
     document.getElementById('giveaways-content').innerHTML = html;
 }
 
 function loadNews() {
-    const data = DEMO_DATA.news;
+    const data = MARKET_DATA.news;
     
     if (data.length === 0) {
         document.getElementById('news-content').innerHTML = '<p style="color: var(--text-secondary);">No news available</p>';
@@ -492,7 +498,6 @@ function loadNews() {
         </div>`;
     });
     
-    html += '<p style="color: var(--text-secondary); margin-top: 20px; font-size: 0.8em; text-align: center;"><i>Demo Mode - Static Data</i></p>';
     document.getElementById('news-content').innerHTML = html;
 }
 
