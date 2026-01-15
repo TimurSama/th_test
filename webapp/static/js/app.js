@@ -214,11 +214,89 @@ function showSection(sectionId) {
 
 function loadDashboard() {
     const data = DEMO_DATA.dashboard;
+    const priceData = DEMO_DATA.priceComparison;
     
+    // Update stats cards
     document.getElementById('access-level').textContent = data.subscription_name;
     document.getElementById('signals-today').textContent = data.signals_today;
     document.getElementById('referral-count').textContent = data.referral_count;
     document.getElementById('data-stream').textContent = data.data_stream_status;
+    
+    // Create price columns dashboard
+    const dashboardGrid = document.getElementById('dashboard-grid');
+    dashboardGrid.innerHTML = ''; // Clear existing cards
+    
+    // Add stats row
+    const statsRow = document.createElement('div');
+    statsRow.className = 'stats-row';
+    statsRow.innerHTML = `
+        <div class="card">
+            <div class="card-title">Access Level</div>
+            <div class="card-value">${data.subscription_name}</div>
+        </div>
+        <div class="card">
+            <div class="card-title">Signals Today</div>
+            <div class="card-value">${data.signals_today}</div>
+        </div>
+        <div class="card">
+            <div class="card-title">Referrals</div>
+            <div class="card-value">${data.referral_count}</div>
+        </div>
+        <div class="card">
+            <div class="card-title">Data Stream</div>
+            <div class="card-value">${data.data_stream_status}</div>
+        </div>
+    `;
+    dashboardGrid.appendChild(statsRow);
+    
+    // Create price columns for each symbol
+    const symbols = Object.keys(priceData).slice(0, 8); // Top 8 symbols
+    
+    symbols.forEach(symbol => {
+        const symbolData = priceData[symbol];
+        const symbolShort = symbol.replace('/USDT', '');
+        
+        // Sort exchanges by price (best to worst)
+        const sortedExchanges = Object.entries(symbolData.prices)
+            .map(([ex, data]) => ({ exchange: ex, ...data }))
+            .sort((a, b) => a.price - b.price); // Sort ascending (lowest = best buy)
+        
+        // Create column container
+        const columnContainer = document.createElement('div');
+        columnContainer.className = 'price-column-container';
+        
+        // Column header
+        const columnHeader = document.createElement('div');
+        columnHeader.className = 'column-header';
+        columnHeader.innerHTML = `
+            <div class="symbol-name">${symbolShort}</div>
+            <div class="symbol-avg">Avg: $${(sortedExchanges.reduce((sum, ex) => sum + ex.price, 0) / sortedExchanges.length).toFixed(2)}</div>
+        `;
+        columnContainer.appendChild(columnHeader);
+        
+        // Price list (sorted from best to worst)
+        const priceList = document.createElement('div');
+        priceList.className = 'price-list';
+        
+        sortedExchanges.forEach((exData, index) => {
+            const isBest = index === 0;
+            const change = exData.change_24h || 0;
+            const changeClass = change >= 0 ? 'positive' : 'negative';
+            const changeStr = change >= 0 ? `+${change.toFixed(2)}%` : `${change.toFixed(2)}%`;
+            
+            const priceItem = document.createElement('div');
+            priceItem.className = `price-item ${isBest ? 'best-price' : ''}`;
+            priceItem.innerHTML = `
+                <div class="exchange-name">${exData.exchange.toUpperCase()}</div>
+                <div class="price-value">$${exData.price.toFixed(2)}</div>
+                <div class="price-change ${changeClass}">${changeStr}</div>
+            `;
+            priceList.appendChild(priceItem);
+        });
+        
+        columnContainer.appendChild(priceList);
+        dashboardGrid.appendChild(columnContainer);
+    });
 }
 
 function loadMarket() {

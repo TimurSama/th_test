@@ -83,10 +83,118 @@ body {
 }
 
 .dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
     margin-bottom: 40px;
+}
+
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.price-columns-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    width: 100%;
+}
+
+.price-column-container {
+    background: var(--bg-darker);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 15px;
+    transition: all 0.3s ease;
+}
+
+.price-column-container:hover {
+    border-color: var(--neon-green);
+    box-shadow: 0 0 15px var(--neon-green-dim);
+}
+
+.column-header {
+    text-align: center;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 15px;
+}
+
+.symbol-name {
+    font-size: 1.4em;
+    font-weight: bold;
+    color: var(--neon-green);
+    margin-bottom: 5px;
+    letter-spacing: 1px;
+}
+
+.symbol-avg {
+    font-size: 0.85em;
+    color: var(--text-secondary);
+}
+
+.price-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.price-item {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 10px;
+    align-items: center;
+    padding: 10px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    transition: all 0.2s ease;
+}
+
+.price-item:hover {
+    border-color: var(--neon-green-dim);
+    background: rgba(0, 255, 65, 0.05);
+}
+
+.price-item.best-price {
+    border-color: var(--neon-green);
+    background: rgba(0, 255, 65, 0.1);
+    box-shadow: 0 0 10px var(--neon-green-dim);
+}
+
+.exchange-name {
+    font-size: 0.9em;
+    font-weight: bold;
+    color: var(--text-primary);
+    letter-spacing: 0.5px;
+}
+
+.price-value {
+    font-size: 1em;
+    font-weight: bold;
+    color: var(--neon-green);
+    text-align: right;
+}
+
+.price-item.best-price .price-value {
+    font-size: 1.1em;
+}
+
+.price-change {
+    font-size: 0.8em;
+    text-align: right;
+    min-width: 60px;
+}
+
+.price-change.positive {
+    color: var(--neon-green);
+}
+
+.price-change.negative {
+    color: #ff4444;
 }
 
 .card {
