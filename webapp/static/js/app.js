@@ -13,18 +13,18 @@ const MARKET_DATA = {
         username: tg.initDataUnsafe?.user?.username || 'User',
         first_name: tg.initDataUnsafe?.user?.first_name || 'User',
         subscription_level: 'premium',
-        join_date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-        referral_count: 12
+        join_date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
     },
     referral: {
         referral_code: 'REF' + userId.toString().slice(-4),
-        referral_count: 12,
-        referral_link: `https://t.me/your_bot?start=ref_REF${userId.toString().slice(-4)}`
+        referral_count: 0,
+        referral_link: `https://t.me/your_bot?start=ref_REF${userId.toString().slice(-4)}`,
+        referrals_list: [] // Empty by default, will be populated when referrals exist
     },
     dashboard: {
         subscription_name: 'PREMIUM ACCESS',
         signals_today: 47,
-        referral_count: 12,
+        referral_count: 0,
         data_stream_status: 'STABLE'
     },
     market: [
@@ -505,6 +505,7 @@ function loadProfile() {
     const referralCount = referralData.referral_count || 0;
     const freeMonths = Math.floor(referralCount / 10);
     const usdtBonus = Math.floor(referralCount / 100) * 15;
+    const referralsList = referralData.referrals_list || [];
     
     let html = '<div class="profile-info">';
     html += `<div class="profile-row"><span class="profile-label">Username</span><span class="profile-value">${data.username || data.first_name || 'N/A'}</span></div>`;
@@ -519,6 +520,31 @@ function loadProfile() {
     html += `<div class="profile-row"><span class="profile-label">Referral Code</span><span class="profile-value"><code>${referralData.referral_code || 'N/A'}</code></span></div>`;
     html += `<div class="profile-row"><span class="profile-label">Referral Link</span><span class="profile-value"><button class="copy-btn" onclick="copyToClipboard('${referralData.referral_link}')">Copy Link</button></span></div>`;
     html += '</div>';
+    
+    // Display referrals list if any
+    if (referralsList.length > 0) {
+        html += '<div class="profile-info" style="margin-top: 20px;">';
+        html += '<h3 style="color: var(--neon-green); margin-bottom: 15px;">YOUR REFERRALS</h3>';
+        html += '<div class="referrals-list">';
+        referralsList.forEach(ref => {
+            const avatarUrl = ref.avatar_url || 'https://via.placeholder.com/40';
+            const username = ref.username || ref.first_name || 'User';
+            const subscription = ref.subscription_level || 'free';
+            html += `<div class="referral-item" style="display: flex; align-items: center; padding: 10px; margin-bottom: 10px; background: var(--bg-darker); border: 1px solid var(--border-color);">`;
+            html += `<img src="${avatarUrl}" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 15px;" onerror="this.src='https://via.placeholder.com/40'">`;
+            html += `<div style="flex: 1;">`;
+            html += `<div style="color: var(--text-primary); font-weight: bold;">${username}</div>`;
+            html += `<div style="color: var(--text-secondary); font-size: 0.9em;">${subscription.toUpperCase()}</div>`;
+            html += `</div>`;
+            html += `</div>`;
+        });
+        html += '</div>';
+        html += '</div>';
+    } else {
+        html += '<div class="profile-info" style="margin-top: 20px; padding: 20px; text-align: center; background: var(--bg-darker);">';
+        html += '<p style="color: var(--text-secondary);">No referrals yet. Share your link to invite friends!</p>';
+        html += '</div>';
+    }
     
     html += '<div class="profile-info" style="margin-top: 20px; border: 1px solid var(--neon-green); padding: 15px;">';
     html += '<h3 style="color: var(--neon-green); margin-bottom: 15px;">BONUSES</h3>';
@@ -652,6 +678,137 @@ function contactPartnership() {
     }
 }
 
+function loadToken() {
+    let html = '<div class="token-info">';
+    html += '<div style="text-align: center; padding: 40px 20px; background: var(--bg-darker); border: 2px solid var(--neon-green); margin-bottom: 30px;">';
+    html += '<h2 style="color: var(--neon-green); font-size: 2.5em; margin-bottom: 20px;">COMING SOON</h2>';
+    html += '<p style="color: var(--text-primary); font-size: 1.2em; margin-bottom: 30px;">Internal Token Launch</p>';
+    html += '</div>';
+    
+    html += '<div class="token-section" style="margin-bottom: 30px;">';
+    html += '<h3 style="color: var(--neon-green); margin-bottom: 15px;">TOKEN DISTRIBUTION</h3>';
+    html += '<p style="color: var(--text-secondary); margin-bottom: 20px;">Earn tokens through various activities:</p>';
+    html += '<ul class="features-list">';
+    html += '<li>Active participation in community chat</li>';
+    html += '<li>Administration and moderation</li>';
+    html += '<li>Partnership rewards</li>';
+    html += '<li>Giveaways and contests</li>';
+    html += '<li>News and signal submissions</li>';
+    html += '</ul>';
+    html += '</div>';
+    
+    html += '<div class="token-section" style="margin-bottom: 30px; padding: 20px; background: var(--bg-darker); border-left: 3px solid var(--neon-green);">';
+    html += '<h3 style="color: var(--neon-green); margin-bottom: 15px;">TOKEN UTILITY</h3>';
+    html += '<p style="color: var(--text-secondary);">Tokens can be used for:</p>';
+    html += '<ul class="features-list" style="margin-top: 10px;">';
+    html += '<li>Premium subscription discounts</li>';
+    html += '<li>Exclusive features access</li>';
+    html += '<li>Voting on platform decisions</li>';
+    html += '<li>Staking rewards</li>';
+    html += '</ul>';
+    html += '</div>';
+    
+    html += '<div style="text-align: center; padding: 20px; background: var(--bg-darker);">';
+    html += '<p style="color: var(--text-secondary);">Stay tuned for the official launch announcement!</p>';
+    html += '</div>';
+    
+    html += '</div>';
+    document.getElementById('token-content').innerHTML = html;
+}
+
+function loadCareers() {
+    let html = '<div class="careers-info">';
+    
+    // Vacancy: Administrator
+    html += '<div class="career-item" style="margin-bottom: 30px; padding: 20px; background: var(--bg-darker); border: 1px solid var(--border-color);">';
+    html += '<h3 style="color: var(--neon-green); margin-bottom: 10px;">Administrator</h3>';
+    html += '<p style="color: var(--text-secondary); margin-bottom: 15px;">Manage community chat, moderate discussions, and help users. Experience in community management required.</p>';
+    html += '<button class="upgrade-btn" onclick="showApplicationForm(\'administrator\')" style="width: 100%;">Apply</button>';
+    html += '</div>';
+    
+    // Vacancy: Journalist
+    html += '<div class="career-item" style="margin-bottom: 30px; padding: 20px; background: var(--bg-darker); border: 1px solid var(--border-color);">';
+    html += '<h3 style="color: var(--neon-green); margin-bottom: 10px;">Journalist / Content Creator</h3>';
+    html += '<p style="color: var(--text-secondary); margin-bottom: 15px;">Create news articles, market analysis, and trading signals. Experience in crypto journalism or trading analysis preferred.</p>';
+    html += '<button class="upgrade-btn" onclick="showApplicationForm(\'journalist\')" style="width: 100%;">Apply</button>';
+    html += '</div>';
+    
+    html += '</div>';
+    
+    // Application form (hidden by default)
+    html += '<div id="application-form" style="display: none; margin-top: 30px; padding: 20px; background: var(--bg-darker); border: 2px solid var(--neon-green);">';
+    html += '<h3 style="color: var(--neon-green); margin-bottom: 20px;">Application Form</h3>';
+    html += '<form id="career-form" onsubmit="submitApplication(event)">';
+    html += '<input type="hidden" id="application-position" name="position">';
+    
+    // Account info (pre-filled)
+    html += '<div style="margin-bottom: 15px;">';
+    html += '<label style="color: var(--text-primary); display: block; margin-bottom: 5px;">Account Information (Auto-filled)</label>';
+    html += `<input type="text" value="${MARKET_DATA.user.username || MARKET_DATA.user.first_name || 'N/A'}" disabled style="width: 100%; padding: 10px; background: var(--bg-dark); color: var(--text-secondary); border: 1px solid var(--border-color);">`;
+    html += '</div>';
+    
+    // Experience
+    html += '<div style="margin-bottom: 15px;">';
+    html += '<label style="color: var(--text-primary); display: block; margin-bottom: 5px;">Experience *</label>';
+    html += '<textarea id="application-experience" name="experience" required rows="4" placeholder="Describe your relevant experience..." style="width: 100%; padding: 10px; background: var(--bg-dark); color: var(--text-primary); border: 1px solid var(--border-color); font-family: inherit;"></textarea>';
+    html += '</div>';
+    
+    // Cases/Portfolio
+    html += '<div style="margin-bottom: 15px;">';
+    html += '<label style="color: var(--text-primary); display: block; margin-bottom: 5px;">Portfolio / Cases</label>';
+    html += '<textarea id="application-cases" name="cases" rows="4" placeholder="Share your portfolio, case studies, or examples of your work..." style="width: 100%; padding: 10px; background: var(--bg-dark); color: var(--text-primary); border: 1px solid var(--border-color); font-family: inherit;"></textarea>';
+    html += '</div>';
+    
+    // Cover Letter
+    html += '<div style="margin-bottom: 15px;">';
+    html += '<label style="color: var(--text-primary); display: block; margin-bottom: 5px;">Cover Letter *</label>';
+    html += '<textarea id="application-cover" name="cover" required rows="5" placeholder="Why do you want to join TokenHunter? What can you bring to the team?" style="width: 100%; padding: 10px; background: var(--bg-dark); color: var(--text-primary); border: 1px solid var(--border-color); font-family: inherit;"></textarea>';
+    html += '</div>';
+    
+    html += '<div style="display: flex; gap: 10px;">';
+    html += '<button type="submit" class="upgrade-btn" style="flex: 1;">Submit Application</button>';
+    html += '<button type="button" class="upgrade-btn" onclick="hideApplicationForm()" style="flex: 1; background: var(--bg-dark);">Cancel</button>';
+    html += '</div>';
+    html += '</form>';
+    html += '</div>';
+    
+    document.getElementById('careers-content').innerHTML = html;
+}
+
+function showApplicationForm(position) {
+    document.getElementById('application-position').value = position;
+    document.getElementById('application-form').style.display = 'block';
+    document.getElementById('application-form').scrollIntoView({ behavior: 'smooth' });
+}
+
+function hideApplicationForm() {
+    document.getElementById('application-form').style.display = 'none';
+    document.getElementById('career-form').reset();
+}
+
+function submitApplication(event) {
+    event.preventDefault();
+    const formData = {
+        position: document.getElementById('application-position').value,
+        username: MARKET_DATA.user.username || MARKET_DATA.user.first_name,
+        user_id: MARKET_DATA.user.user_id,
+        experience: document.getElementById('application-experience').value,
+        cases: document.getElementById('application-cases').value,
+        cover: document.getElementById('application-cover').value
+    };
+    
+    // In production, this would send to backend
+    console.log('Application submitted:', formData);
+    
+    if (tg && tg.showAlert) {
+        tg.showAlert('Application submitted successfully! We will contact you soon.');
+    } else {
+        alert('Application submitted successfully! We will contact you soon.');
+    }
+    
+    hideApplicationForm();
+}
+
 function loadSectionData(sectionId) {
     switch(sectionId) {
         case 'dashboard':
@@ -674,6 +831,12 @@ function loadSectionData(sectionId) {
             break;
         case 'partnership':
             loadPartnership();
+            break;
+        case 'token':
+            loadToken();
+            break;
+        case 'careers':
+            loadCareers();
             break;
         case 'news':
             loadNews();

@@ -659,3 +659,37 @@ code {
     margin-bottom: 20px;
 }
 
+.referrals-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.referral-item {
+    transition: all 0.3s ease;
+}
+
+.referral-item:hover {
+    border-color: var(--neon-green) !important;
+    background: var(--bg-dark) !important;
+}
+
+.career-item {
+    transition: all 0.3s ease;
+}
+
+.career-item:hover {
+    border-color: var(--neon-green) !important;
+}
+
+#application-form textarea,
+#application-form input {
+    resize: vertical;
+}
+
+#application-form textarea:focus,
+#application-form input:focus {
+    outline: none;
+    border-color: var(--neon-green);
+}
+
