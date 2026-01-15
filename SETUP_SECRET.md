@@ -9,10 +9,10 @@
 ### Шаг 1: Откройте настройки репозитория
 
 Перейдите по ссылке:
-**https://github.com/TimurSama/th_demo/settings/secrets/actions**
+**https://github.com/Unclekentuki/th_demo/settings/secrets/actions**
 
 Или вручную:
-1. Откройте репозиторий: https://github.com/TimurSama/th_demo
+1. Откройте репозиторий: https://github.com/Unclekentuki/th_demo
 2. Нажмите **Settings** (вверху справа)
 3. В левом меню выберите **Secrets and variables** → **Actions**
 
@@ -27,7 +27,7 @@
 ### Шаг 3: Проверка
 
 После добавления секрета:
-1. Перейдите в раздел **Actions**: https://github.com/TimurSama/th_demo/actions
+1. Перейдите в раздел **Actions**: https://github.com/Unclekentuki/th_demo/actions
 2. Запустите workflow вручную: **Collect Market Data** → **Run workflow**
 3. Workflow должен выполниться успешно
 
@@ -62,4 +62,5 @@ Warning: TELEGRAM_BOT_TOKEN secret is not set
 ```
 
 Если видите это предупреждение - секрет не установлен или установлен неправильно.
+
 

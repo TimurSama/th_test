@@ -8,12 +8,12 @@
   1. Initial commit: TokenHunter - Crypto market pulse scanner...
   2. Add post-deployment instructions
   3. Add deployment troubleshooting guides
-- ✅ Remote настроен: `https://github.com/TimurSama/th_demo.git`
+- ✅ Remote настроен: `https://github.com/Unclekentuki/th_demo.git`
 - ✅ Push выполнен успешно
 
 ## 🔍 Проверка на GitHub
 
-**Откройте в браузере:** https://github.com/TimurSama/th_demo
+**Откройте в браузере:** https://github.com/Unclekentuki/th_demo
 
 ### Что должно быть видно:
 
@@ -66,7 +66,7 @@ git push -u origin main
 
 2. Используйте токен:
 ```bash
-git remote set-url origin https://<ВАШ_ТОКЕН>@github.com/TimurSama/th_demo.git
+git remote set-url origin https://<ВАШ_ТОКЕН>@github.com/Unclekentuki/th_demo.git
 git push -u origin main
 ```
 
@@ -110,4 +110,5 @@ git ls-files | wc -l
 3. Запустите бота локально для тестирования
 
 Подробнее: см. **POST_DEPLOY.md**
+
 

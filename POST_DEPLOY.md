@@ -2,7 +2,7 @@
 
 ## ✅ Деплой завершен!
 
-Код успешно загружен в репозиторий: https://github.com/TimurSama/th_demo
+Код успешно загружен в репозиторий: https://github.com/Unclekentuki/th_demo
 
 ## Следующие шаги
 
@@ -10,7 +10,7 @@
 
 Для работы GitHub Actions необходимо добавить секрет:
 
-1. Перейдите в репозиторий: https://github.com/TimurSama/th_demo
+1. Перейдите в репозиторий: https://github.com/Unclekentuki/th_demo
 2. Откройте **Settings** → **Secrets and variables** → **Actions**
 3. Нажмите **New repository secret**
 4. Добавьте:
@@ -77,11 +77,11 @@ python main.py
 ## Проверка деплоя
 
 Откройте репозиторий и убедитесь, что все файлы на месте:
-- https://github.com/TimurSama/th_demo
+- https://github.com/Unclekentuki/th_demo
 
 ## Полезные ссылки
 
-- **Репозиторий**: https://github.com/TimurSama/th_demo
+- **Репозиторий**: https://github.com/Unclekentuki/th_demo
 - **Быстрый старт**: см. QUICKSTART.md
 - **Настройка GitHub**: см. GITHUB_SETUP.md
 - **Развертывание**: см. DEPLOYMENT.md
@@ -100,8 +100,9 @@ python main.py
 
 ### Ошибки при клонировании?
 ```bash
-git clone https://github.com/TimurSama/th_demo
+git clone https://github.com/Unclekentuki/th_demo
 cd th_demo
 python scripts/setup_env.py
 ```
+
 

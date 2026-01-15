@@ -8,7 +8,7 @@
 
 ### Шаг 1: Добавьте секрет TELEGRAM_BOT_TOKEN
 
-1. Откройте репозиторий: https://github.com/TimurSama/th_demo
+1. Откройте репозиторий: https://github.com/Unclekentuki/th_demo
 2. Перейдите в **Settings** → **Secrets and variables** → **Actions**
 3. Нажмите **New repository secret**
 4. Добавьте:
@@ -87,4 +87,5 @@ python scripts/collect_market_data.py
 ```
 
 Если скрипт работает локально, он должен работать и в GitHub Actions.
+
 

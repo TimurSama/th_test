@@ -38,7 +38,7 @@ git push -u origin main
 
 2. Используйте токен для push:
 ```bash
-git remote set-url origin https://<ВАШ_ТОКЕН>@github.com/TimurSama/th_demo.git
+git remote set-url origin https://<ВАШ_ТОКЕН>@github.com/Unclekentuki/th_demo.git
 git push -u origin main
 ```
 
@@ -60,7 +60,7 @@ ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
 
 3. Используйте SSH URL:
 ```bash
-git remote set-url origin git@github.com:TimurSama/th_demo.git
+git remote set-url origin git@github.com:Unclekentuki/th_demo.git
 git push -u origin main
 ```
 
@@ -101,7 +101,7 @@ git ls-files | wc -l
 
 ### Шаг 1: Убедитесь, что репозиторий существует
 
-Откройте в браузере: https://github.com/TimurSama/th_demo
+Откройте в браузере: https://github.com/Unclekentuki/th_demo
 
 - Если видите 404 → репозиторий не существует, создайте его (см. Проблема 1)
 - Если видите пустой репозиторий → выполните push (см. ниже)
@@ -115,7 +115,7 @@ git remote -v
 
 # Если нужно переподключиться
 git remote remove origin
-git remote add origin https://github.com/TimurSama/th_demo.git
+git remote add origin https://github.com/Unclekentuki/th_demo.git
 
 # Push с аутентификацией (если нужно)
 git push -u origin main
@@ -123,7 +123,7 @@ git push -u origin main
 
 ### Шаг 3: Проверка результата
 
-После push откройте: https://github.com/TimurSama/th_demo
+После push откройте: https://github.com/Unclekentuki/th_demo
 
 Должны быть видны:
 - ✅ Все папки (bot/, database/, services/, webapp/, scripts/)
@@ -142,7 +142,7 @@ git remote remove origin
 # НЕ добавлять README, .gitignore, license
 
 # 3. Добавить remote заново
-git remote add origin https://github.com/TimurSama/th_demo.git
+git remote add origin https://github.com/Unclekentuki/th_demo.git
 
 # 4. Push
 git push -u origin main
@@ -154,7 +154,7 @@ git push -u origin main
 
 После успешного push проверьте:
 
-1. ✅ https://github.com/TimurSama/th_demo - файлы видны
+1. ✅ https://github.com/Unclekentuki/th_demo - файлы видны
 2. ✅ В разделе "Code" видны все папки и файлы
 3. ✅ В разделе "Commits" видны 2 коммита:
    - "Initial commit: TokenHunter..."
@@ -166,4 +166,5 @@ git push -u origin main
 2. Убедитесь, что репозиторий создан и доступен
 3. Проверьте настройки аутентификации (токен или SSH)
 4. Попробуйте создать репозиторий заново через веб-интерфейс
+
 

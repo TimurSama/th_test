@@ -6,7 +6,7 @@
 
 ```bash
 # Клонирование репозитория
-git clone https://github.com/TimurSama/th_demo
+git clone https://github.com/Unclekentuki/th_demo
 cd th_demo
 
 # Создание виртуального окружения
@@ -202,7 +202,7 @@ TELEGRAM_WEBAPP_URL=https://your-domain.com
 
 ## GitHub Actions настройка
 
-1. Перейдите в https://github.com/TimurSama/th_demo
+1. Перейдите в https://github.com/Unclekentuki/th_demo
 2. Settings → Secrets and variables → Actions
 3. Добавьте секрет:
    - Name: `TELEGRAM_BOT_TOKEN`
@@ -266,4 +266,5 @@ tar -czf backup_$(date +%Y%m%d).tar.gz data/ .env
 - Проверьте, что секрет добавлен правильно
 - Проверьте логи в разделе Actions
 - Убедитесь, что workflow файл существует
+
 

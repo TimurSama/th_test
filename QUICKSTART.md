@@ -44,7 +44,7 @@ python main.py
 
 Для автоматического сбора данных рынка:
 
-1. Перейдите в https://github.com/TimurSama/th_demo
+1. Перейдите в https://github.com/Unclekentuki/th_demo
 2. Settings → Secrets and variables → Actions
 3. Добавьте секрет `TELEGRAM_BOT_TOKEN` со значением: `8591869020:AAFnlsirUwd3TKMibAWDE209OBwVU40ZEjo`
 
@@ -90,4 +90,5 @@ python main.py
 **GitHub Actions не работает?**
 - Проверьте, что секрет `TELEGRAM_BOT_TOKEN` добавлен в репозиторий
 - Проверьте логи в разделе Actions
+
 

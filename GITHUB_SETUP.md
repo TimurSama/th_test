@@ -2,7 +2,7 @@
 
 ## Шаг 1: Добавление секретов в GitHub
 
-1. Перейдите в ваш репозиторий: https://github.com/TimurSama/th_demo
+1. Перейдите в ваш репозиторий: https://github.com/Unclekentuki/th_demo
 2. Откройте **Settings** → **Secrets and variables** → **Actions**
 3. Нажмите **New repository secret**
 4. Добавьте секрет:
@@ -36,4 +36,5 @@ GitHub Actions автоматически настроен для:
    ```bash
    python scripts/add_admin.py <ваш_user_id>
    ```
+
 

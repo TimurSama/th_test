@@ -25,11 +25,11 @@ TokenHunter — это автономная система для:
 
 1. Клонируйте репозиторий:
 ```bash
-git clone https://github.com/TimurSama/th_demo
+git clone https://github.com/Unclekentuki/th_demo
 cd th_demo
 ```
 
-**Репозиторий**: https://github.com/TimurSama/th_demo
+**Репозиторий**: https://github.com/Unclekentuki/th_demo
 
 2. Создайте виртуальное окружение:
 ```bash
@@ -180,5 +180,6 @@ TokenHunter использует стиль общения в духе «Мат�
 
 ## Репозиторий
 
-GitHub: https://github.com/TimurSama/th_demo
+GitHub: https://github.com/Unclekentuki/th_demo
+
 
