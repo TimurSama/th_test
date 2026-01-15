@@ -1,6 +1,6 @@
 import logging
 from telegram import Update
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes, PreCheckoutQueryHandler, MessageHandler, filters
 from config import TELEGRAM_BOT_TOKEN
 from bot.handlers import (
     start_command,
@@ -8,7 +8,17 @@ from bot.handlers import (
     subscription_callback,
     referral_callback,
     giveaways_callback,
-    main_menu_callback
+    main_menu_callback,
+    buy_pro_callback,
+    buy_premium_callback,
+    pay_stars_pro_callback,
+    pay_stars_premium_callback,
+    pay_wallet_pro_callback,
+    pay_wallet_premium_callback,
+    pay_usdt_pro_callback,
+    pay_usdt_premium_callback,
+    precheckout_callback,
+    successful_payment_callback
 )
 from bot.admin_handlers import (
     admin_stats_command,
@@ -35,6 +45,16 @@ def main():
     application.add_handler(CallbackQueryHandler(referral_callback, pattern="^referral$"))
     application.add_handler(CallbackQueryHandler(giveaways_callback, pattern="^giveaways$"))
     application.add_handler(CallbackQueryHandler(main_menu_callback, pattern="^main_menu$"))
+    application.add_handler(CallbackQueryHandler(buy_pro_callback, pattern="^buy_pro$"))
+    application.add_handler(CallbackQueryHandler(buy_premium_callback, pattern="^buy_premium$"))
+    application.add_handler(CallbackQueryHandler(pay_stars_pro_callback, pattern="^pay_stars_pro$"))
+    application.add_handler(CallbackQueryHandler(pay_stars_premium_callback, pattern="^pay_stars_premium$"))
+    application.add_handler(CallbackQueryHandler(pay_wallet_pro_callback, pattern="^pay_wallet_pro$"))
+    application.add_handler(CallbackQueryHandler(pay_wallet_premium_callback, pattern="^pay_wallet_premium$"))
+    application.add_handler(CallbackQueryHandler(pay_usdt_pro_callback, pattern="^pay_usdt_pro$"))
+    application.add_handler(CallbackQueryHandler(pay_usdt_premium_callback, pattern="^pay_usdt_premium$"))
+    application.add_handler(PreCheckoutQueryHandler(precheckout_callback))
+    application.add_handler(MessageHandler(filters.SUCCESSFUL_PAYMENT, successful_payment_callback))
     application.add_handler(CommandHandler("admin_stats", admin_stats_command))
     application.add_handler(CommandHandler("admin_post", admin_post_command))
     application.add_handler(CommandHandler("admin_giveaway_start", admin_giveaway_start_command))

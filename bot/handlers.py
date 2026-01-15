@@ -13,6 +13,7 @@ from database import Database, User, MarketSnapshot, Referral
 from services.subscription_service import SubscriptionService
 from services.referral_service import ReferralService
 from services.market_collector import MarketCollector
+from services.price_comparison import compare_prices_across_exchanges, format_price_table
 from config import EXCHANGES
 
 logger = logging.getLogger(__name__)
@@ -73,68 +74,30 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def get_pulse_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle GET THE PULSE button"""
     query = update.callback_query
-    await query.answer()
+    await query.answer("Collecting market data...")
     
     user_id = update.effective_user.id
     
-    # Check subscription access
     async with aiosqlite.connect(DATABASE_PATH) as db:
         subscription = await subscription_service.get_user_subscription(user_id)
         level = subscription["level"]
-        
-        # Get latest market snapshots
-        snapshots = await MarketSnapshot.get_latest_snapshots(db, limit=20)
     
-    if not snapshots:
-        # Collect fresh data if no snapshots
-        pulse_data = await market_collector.get_market_pulse(top_pairs_limit=20)
-        
-        # Save to database
-        async with aiosqlite.connect(DATABASE_PATH) as db:
-            for item in pulse_data:
-                for exchange_data in item.get('exchanges', []):
-                    await MarketSnapshot.save_snapshot(
-                        db,
-                        exchange_data['exchange'],
-                        item['symbol'],
-                        item['avg_price'],
-                        item['total_volume_24h'],
-                        item['avg_change_24h']
-                    )
-        
-        # Format message
-        message = "MARKET PULSE — LAST SNAPSHOT\n\n"
-        for item in pulse_data[:10]:
-            symbol = item['symbol']
-            change = item['avg_change_24h']
-            volume = item['total_volume_24h']
-            
-            change_str = f"+{change:.2f}%" if change >= 0 else f"{change:.2f}%"
-            volume_str = format_volume(volume)
-            
-            message += f"{symbol:12} | {change_str:8} | Vol: {volume_str}\n"
-        
-        message += "\nData source: multi-exchange\n"
-        message += f"Timestamp: UTC\n\n"
-        message += f"Access level: {SUBSCRIPTION_LEVELS[level]['name']}"
-    else:
-        # Format from database snapshots
-        message = "MARKET PULSE — LAST SNAPSHOT\n\n"
-        for snapshot in snapshots[:10]:
-            symbol = snapshot['symbol']
-            change = snapshot['change_24h']
-            volume = snapshot['volume_24h']
-            
-            change_str = f"+{change:.2f}%" if change >= 0 else f"{change:.2f}%"
-            volume_str = format_volume(volume)
-            
-            message += f"{symbol:12} | {change_str:8} | Vol: {volume_str}\n"
-        
-        message += "\nData source: multi-exchange\n"
-        message += f"Timestamp: UTC\n\n"
-        message += f"Access level: {SUBSCRIPTION_LEVELS[level]['name']}"
+    top_symbols = ["BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT", "XRP/USDT", "ADA/USDT", "DOGE/USDT", "AVAX/USDT"]
     
-    # Show main menu
+    try:
+        comparison = await compare_prices_across_exchanges(market_collector, top_symbols)
+        if comparison:
+            message = format_price_table(comparison, top_symbols)
+            message += f"\n\nAccess: {SUBSCRIPTION_LEVELS[level]['name']}"
+        else:
+            raise Exception("No comparison data")
+    except Exception as e:
+        logger.error(f"Error getting price comparison: {e}", exc_info=True)
+        message = "MARKET PULSE\n\n"
+        message += "Collecting data from exchanges...\n"
+        message += "Please try again in a moment.\n\n"
+        message += f"Access: {SUBSCRIPTION_LEVELS[level]['name']}"
+    
     keyboard = [
         [InlineKeyboardButton("GET THE PULSE", callback_data="get_pulse")],
         [
@@ -148,7 +111,11 @@ async def get_pulse_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
-    await query.edit_message_text(message, reply_markup=reply_markup)
+    try:
+        await query.edit_message_text(message, reply_markup=reply_markup)
+    except Exception as e:
+        logger.error(f"Error editing message: {e}")
+        await query.message.reply_text(message, reply_markup=reply_markup)
 
 
 async def subscription_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -171,9 +138,12 @@ async def subscription_callback(update: Update, context: ContextTypes.DEFAULT_TY
             message += f"  • {feature}\n"
         message += "\n"
     
-    keyboard = [
-        [InlineKeyboardButton("← Back", callback_data="main_menu")]
-    ]
+    keyboard = []
+    if current_level != "pro":
+        keyboard.append([InlineKeyboardButton("🔄 Upgrade to PRO", callback_data="buy_pro")])
+    if current_level != "premium":
+        keyboard.append([InlineKeyboardButton("⭐ Upgrade to PREMIUM", callback_data="buy_premium")])
+    keyboard.append([InlineKeyboardButton("← Back", callback_data="main_menu")])
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await query.edit_message_text(message, reply_markup=reply_markup)
@@ -266,6 +236,273 @@ async def main_menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
     
     await query.edit_message_text(message, reply_markup=reply_markup)
 
+
+async def buy_pro_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle PRO subscription purchase"""
+    query = update.callback_query
+    await query.answer()
+    
+    user_id = update.effective_user.id
+    
+    from services.payment_service import PaymentService, SUBSCRIPTION_PRICES
+    
+    payment_service = PaymentService()
+    price_info = SUBSCRIPTION_PRICES["pro"]
+    
+    message = "PRO SUBSCRIPTION\n\n"
+    message += "Choose payment method:\n\n"
+    message += f"⭐ Telegram Stars: {price_info['stars']} stars\n"
+    message += f"💳 Telegram Wallet: ${price_info['usdt']} USDT\n"
+    message += f"🔷 USDT Wallet: {price_info['usdt']} USDT\n\n"
+    message += "Duration: 30 days"
+    
+    keyboard = [
+        [InlineKeyboardButton(f"⭐ Pay {price_info['stars']} Stars", callback_data="pay_stars_pro")],
+        [InlineKeyboardButton(f"💳 Pay ${price_info['usdt']} USDT (Wallet)", callback_data="pay_wallet_pro")],
+        [InlineKeyboardButton(f"🔷 Pay {price_info['usdt']} USDT (Manual)", callback_data="pay_usdt_pro")],
+        [InlineKeyboardButton("← Back", callback_data="subscription")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.edit_message_text(message, reply_markup=reply_markup)
+
+async def buy_premium_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle PREMIUM subscription purchase"""
+    query = update.callback_query
+    await query.answer()
+    
+    user_id = update.effective_user.id
+    
+    from services.payment_service import PaymentService, SUBSCRIPTION_PRICES
+    
+    payment_service = PaymentService()
+    price_info = SUBSCRIPTION_PRICES["premium"]
+    
+    message = "PREMIUM SUBSCRIPTION\n\n"
+    message += "Choose payment method:\n\n"
+    message += f"⭐ Telegram Stars: {price_info['stars']} stars\n"
+    message += f"💳 Telegram Wallet: ${price_info['usdt']} USDT\n"
+    message += f"🔷 USDT Wallet: {price_info['usdt']} USDT\n\n"
+    message += "Duration: 30 days"
+    
+    keyboard = [
+        [InlineKeyboardButton(f"⭐ Pay {price_info['stars']} Stars", callback_data="pay_stars_premium")],
+        [InlineKeyboardButton(f"💳 Pay ${price_info['usdt']} USDT (Wallet)", callback_data="pay_wallet_premium")],
+        [InlineKeyboardButton(f"🔷 Pay {price_info['usdt']} USDT (Manual)", callback_data="pay_usdt_premium")],
+        [InlineKeyboardButton("← Back", callback_data="subscription")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.edit_message_text(message, reply_markup=reply_markup)
+
+async def pay_stars_pro_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle Stars payment for PRO"""
+    query = update.callback_query
+    await query.answer()
+    
+    user_id = update.effective_user.id
+    from services.payment_service import PaymentService, SUBSCRIPTION_PRICES
+    
+    payment_service = PaymentService()
+    price_info = SUBSCRIPTION_PRICES["pro"]
+    
+    try:
+        payment_data = await payment_service.create_payment(user_id, "pro", "stars")
+        
+        await query.message.reply_invoice(
+            title="PRO Subscription - 30 days",
+            description="TokenHunter PRO Access",
+            payload=payment_data["payment_id"],
+            provider_token="",
+            currency="XTR",
+            prices=[LabeledPrice("PRO Subscription", price_info["stars"])],
+            reply_markup=InlineKeyboardMarkup([[
+                InlineKeyboardButton("⭐ Pay with Stars", pay=True)
+            ]])
+        )
+    except Exception as e:
+        logger.error(f"Error creating Stars payment: {e}", exc_info=True)
+        await query.answer("Payment error. Please try again.", show_alert=True)
+
+async def pay_stars_premium_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle Stars payment for PREMIUM"""
+    query = update.callback_query
+    await query.answer()
+    
+    user_id = update.effective_user.id
+    from services.payment_service import PaymentService, SUBSCRIPTION_PRICES
+    
+    payment_service = PaymentService()
+    price_info = SUBSCRIPTION_PRICES["premium"]
+    
+    try:
+        payment_data = await payment_service.create_payment(user_id, "premium", "stars")
+        
+        await query.message.reply_invoice(
+            title="PREMIUM Subscription - 30 days",
+            description="TokenHunter PREMIUM Access",
+            payload=payment_data["payment_id"],
+            provider_token="",
+            currency="XTR",
+            prices=[LabeledPrice("PREMIUM Subscription", price_info["stars"])],
+            reply_markup=InlineKeyboardMarkup([[
+                InlineKeyboardButton("⭐ Pay with Stars", pay=True)
+            ]])
+        )
+    except Exception as e:
+        logger.error(f"Error creating Stars payment: {e}", exc_info=True)
+        await query.answer("Payment error. Please try again.", show_alert=True)
+
+async def pay_wallet_pro_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle Wallet payment for PRO"""
+    query = update.callback_query
+    await query.answer()
+    
+    user_id = update.effective_user.id
+    from services.payment_service import PaymentService, SUBSCRIPTION_PRICES
+    
+    payment_service = PaymentService()
+    price_info = SUBSCRIPTION_PRICES["pro"]
+    
+    try:
+        payment_data = await payment_service.create_payment(user_id, "pro", "wallet")
+        
+        await query.message.reply_invoice(
+            title="PRO Subscription - 30 days",
+            description="TokenHunter PRO Access",
+            payload=payment_data["payment_id"],
+            provider_token="",
+            currency="USD",
+            prices=[LabeledPrice("PRO Subscription", int(price_info["usdt"] * 100))],
+            reply_markup=InlineKeyboardMarkup([[
+                InlineKeyboardButton("💳 Pay with Wallet", pay=True)
+            ]])
+        )
+    except Exception as e:
+        logger.error(f"Error creating Wallet payment: {e}", exc_info=True)
+        await query.answer("Payment error. Please try again.", show_alert=True)
+
+async def pay_wallet_premium_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle Wallet payment for PREMIUM"""
+    query = update.callback_query
+    await query.answer()
+    
+    user_id = update.effective_user.id
+    from services.payment_service import PaymentService, SUBSCRIPTION_PRICES
+    
+    payment_service = PaymentService()
+    price_info = SUBSCRIPTION_PRICES["premium"]
+    
+    try:
+        payment_data = await payment_service.create_payment(user_id, "premium", "wallet")
+        
+        await query.message.reply_invoice(
+            title="PREMIUM Subscription - 30 days",
+            description="TokenHunter PREMIUM Access",
+            payload=payment_data["payment_id"],
+            provider_token="",
+            currency="USD",
+            prices=[LabeledPrice("PREMIUM Subscription", int(price_info["usdt"] * 100))],
+            reply_markup=InlineKeyboardMarkup([[
+                InlineKeyboardButton("💳 Pay with Wallet", pay=True)
+            ]])
+        )
+    except Exception as e:
+        logger.error(f"Error creating Wallet payment: {e}", exc_info=True)
+        await query.answer("Payment error. Please try again.", show_alert=True)
+
+async def pay_usdt_pro_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle USDT manual payment for PRO"""
+    query = update.callback_query
+    await query.answer()
+    
+    user_id = update.effective_user.id
+    from services.payment_service import PaymentService, SUBSCRIPTION_PRICES
+    import os
+    
+    payment_service = PaymentService()
+    price_info = SUBSCRIPTION_PRICES["pro"]
+    wallet_address = await payment_service.get_usdt_wallet_address()
+    
+    if not wallet_address:
+        wallet_address = os.getenv("USDT_WALLET_ADDRESS", "YOUR_WALLET_ADDRESS")
+    
+    payment_data = await payment_service.create_payment(user_id, "pro", "usdt")
+    
+    message = "USDT PAYMENT — PRO\n\n"
+    message += f"Amount: {price_info['usdt']} USDT\n"
+    message += f"Network: TRC20 (Tron)\n\n"
+    message += f"Send to:\n`{wallet_address}`\n\n"
+    message += f"Payment ID: `{payment_data['payment_id']}`\n\n"
+    message += "After payment, send transaction hash to verify."
+    
+    keyboard = [
+        [InlineKeyboardButton("✅ Verify Payment", callback_data=f"verify_usdt_{payment_data['payment_id']}")],
+        [InlineKeyboardButton("← Back", callback_data="subscription")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.edit_message_text(message, reply_markup=reply_markup, parse_mode='Markdown')
+
+async def pay_usdt_premium_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle USDT manual payment for PREMIUM"""
+    query = update.callback_query
+    await query.answer()
+    
+    user_id = update.effective_user.id
+    from services.payment_service import PaymentService, SUBSCRIPTION_PRICES
+    import os
+    
+    payment_service = PaymentService()
+    price_info = SUBSCRIPTION_PRICES["premium"]
+    wallet_address = await payment_service.get_usdt_wallet_address()
+    
+    if not wallet_address:
+        wallet_address = os.getenv("USDT_WALLET_ADDRESS", "YOUR_WALLET_ADDRESS")
+    
+    payment_data = await payment_service.create_payment(user_id, "premium", "usdt")
+    
+    message = "USDT PAYMENT — PREMIUM\n\n"
+    message += f"Amount: {price_info['usdt']} USDT\n"
+    message += f"Network: TRC20 (Tron)\n\n"
+    message += f"Send to:\n`{wallet_address}`\n\n"
+    message += f"Payment ID: `{payment_data['payment_id']}`\n\n"
+    message += "After payment, send transaction hash to verify."
+    
+    keyboard = [
+        [InlineKeyboardButton("✅ Verify Payment", callback_data=f"verify_usdt_{payment_data['payment_id']}")],
+        [InlineKeyboardButton("← Back", callback_data="subscription")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.edit_message_text(message, reply_markup=reply_markup, parse_mode='Markdown')
+
+async def precheckout_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle pre-checkout query"""
+    query = update.pre_checkout_query
+    await query.answer(ok=True)
+
+async def successful_payment_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle successful payment"""
+    payment = update.message.successful_payment
+    payment_id = payment.invoice_payload
+    
+    from services.payment_service import PaymentService
+    
+    payment_service = PaymentService()
+    success = await payment_service.process_stars_payment(payment_id)
+    
+    if success:
+        payment_data = payment_service.pending_payments.get(payment_id, {})
+        level = payment_data.get("level", "pro")
+        
+        message = f"{level.upper()} ACCESS ACTIVATED\n\n"
+        message += "Payment successful!\n"
+        message += "Your subscription has been activated."
+        
+        await update.message.reply_text(message)
+    else:
+        await update.message.reply_text("Payment processing error. Please contact support.")
 
 def format_volume(volume: float) -> str:
     """Format volume for display"""

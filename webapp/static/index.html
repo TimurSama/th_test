@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TokenHunter</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>TOKENHUNTER</h1>
+            <div class="subtitle">You are inside the grid</div>
+        </div>
+
+        <div class="nav">
+            <button class="nav-btn active" onclick="showSection('dashboard')">Dashboard</button>
+            <button class="nav-btn" onclick="showSection('market')">Market</button>
+            <button class="nav-btn" onclick="showSection('price-comparison')">Price Compare</button>
+            <button class="nav-btn" onclick="showSection('subscriptions')">Subscriptions</button>
+            <button class="nav-btn" onclick="showSection('profile')">Profile</button>
+            <button class="nav-btn" onclick="showSection('giveaways')">Giveaways</button>
+            <button class="nav-btn" onclick="showSection('news')">News</button>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="content-section active">
+            <div class="dashboard-grid" id="dashboard-grid">
+                <div class="card">
+                    <div class="card-title">Access Level</div>
+                    <div class="card-value" id="access-level">LOADING</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Data Stream</div>
+                    <div class="card-value" id="data-stream">STABLE</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Signals Today</div>
+                    <div class="card-value" id="signals-today">0</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Referrals</div>
+                    <div class="card-value" id="referral-count">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Market & Signals Section -->
+        <div id="market" class="content-section">
+            <h2 style="margin-bottom: 20px; color: var(--neon-green);">MARKET PULSE</h2>
+            <div id="market-content" class="loading">Loading market data</div>
+        </div>
+
+        <!-- Price Comparison Section -->
+        <div id="price-comparison" class="content-section">
+            <h2 style="margin-bottom: 20px; color: var(--neon-green);">PRICE COMPARISON — 8 EXCHANGES</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 0.9em;">Compare prices across top exchanges. Best buy prices are highlighted.</p>
+            <div id="price-comparison-content" class="loading">Loading price comparison</div>
+        </div>
+
+        <!-- Subscriptions Section -->
+        <div id="subscriptions" class="content-section">
+            <h2 style="margin-bottom: 20px; color: var(--neon-green);">SUBSCRIPTION LEVELS</h2>
+            <div id="subscriptions-content" class="loading">Loading subscriptions</div>
+        </div>
+
+        <!-- Profile Section -->
+        <div id="profile" class="content-section">
+            <h2 style="margin-bottom: 20px; color: var(--neon-green);">PROFILE</h2>
+            <div id="profile-content" class="loading">Loading profile</div>
+        </div>
+
+        <!-- Giveaways Section -->
+        <div id="giveaways" class="content-section">
+            <h2 style="margin-bottom: 20px; color: var(--neon-green);">GIVEAWAYS</h2>
+            <div id="giveaways-content" class="loading">Loading giveaways</div>
+        </div>
+
+        <!-- News Section -->
+        <div id="news" class="content-section">
+            <h2 style="margin-bottom: 20px; color: var(--neon-green);">NEWS & UPDATES</h2>
+            <div id="news-content" class="loading">Loading news</div>
+        </div>
+
+        <div class="footer">
+            TokenHunter Network | Signal detected
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        tg.setHeaderColor('#0a0a0a');
+        tg.setBackgroundColor('#0a0a0a');
+    </script>
+</body>
+</html>
+

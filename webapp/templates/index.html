@@ -259,6 +259,138 @@
             color: var(--text-primary);
         }
 
+        /* Price Comparison */
+        .comparison-table-wrapper {
+            overflow-x: auto;
+        }
+
+        .comparison-table {
+            min-width: 100%;
+        }
+
+        .comparison-table .best-price {
+            color: var(--neon-green);
+            font-weight: bold;
+        }
+
+        .comparison-table .no-data {
+            color: var(--text-secondary);
+            opacity: 0.5;
+        }
+
+        /* Subscriptions */
+        .subscriptions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .subscription-card {
+            background: var(--bg-darker);
+            border: 1px solid var(--border-color);
+            padding: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .subscription-card.current {
+            border-color: var(--neon-green);
+            box-shadow: 0 0 20px var(--neon-green-dim);
+        }
+
+        .subscription-card.upgrade:hover {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+        }
+
+        .subscription-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .subscription-header h3 {
+            color: var(--neon-green);
+            font-size: 1.3em;
+            letter-spacing: 2px;
+        }
+
+        .current-badge {
+            background: var(--neon-green);
+            color: var(--bg-dark);
+            padding: 4px 12px;
+            font-size: 0.7em;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        .features-list {
+            list-style: none;
+            margin: 20px 0;
+        }
+
+        .features-list li {
+            color: var(--text-secondary);
+            padding: 8px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .features-list li:before {
+            content: '▸';
+            color: var(--neon-green);
+            position: absolute;
+            left: 0;
+        }
+
+        .upgrade-btn {
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            border: 1px solid var(--accent-blue);
+            color: var(--accent-blue);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.9em;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .upgrade-btn:hover:not(.disabled) {
+            background: var(--accent-blue);
+            color: var(--bg-dark);
+        }
+
+        .upgrade-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .copy-btn {
+            padding: 6px 12px;
+            background: transparent;
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.8em;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: var(--neon-green);
+            color: var(--bg-dark);
+        }
+
+        code {
+            background: var(--bg-darker);
+            padding: 4px 8px;
+            border: 1px solid var(--border-color);
+            font-family: 'Courier New', monospace;
+            color: var(--neon-green);
+        }
+
         /* Footer */
         .footer {
             text-align: center;
@@ -279,10 +411,12 @@
 
         <div class="nav">
             <button class="nav-btn active" onclick="showSection('dashboard')">Dashboard</button>
-            <button class="nav-btn" onclick="showSection('market')">Market & Signals</button>
+            <button class="nav-btn" onclick="showSection('market')">Market</button>
+            <button class="nav-btn" onclick="showSection('price-comparison')">Price Compare</button>
+            <button class="nav-btn" onclick="showSection('subscriptions')">Subscriptions</button>
             <button class="nav-btn" onclick="showSection('profile')">Profile</button>
             <button class="nav-btn" onclick="showSection('giveaways')">Giveaways</button>
-            <button class="nav-btn" onclick="showSection('news')">News & Updates</button>
+            <button class="nav-btn" onclick="showSection('news')">News</button>
         </div>
 
         <!-- Dashboard Section -->
@@ -313,6 +447,19 @@
             <div id="market-content" class="loading">Loading market data</div>
         </div>
 
+        <!-- Price Comparison Section -->
+        <div id="price-comparison" class="content-section">
+            <h2 style="margin-bottom: 20px; color: var(--neon-green);">PRICE COMPARISON — 8 EXCHANGES</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 0.9em;">Compare prices across top exchanges. Best buy prices are highlighted.</p>
+            <div id="price-comparison-content" class="loading">Loading price comparison</div>
+        </div>
+
+        <!-- Subscriptions Section -->
+        <div id="subscriptions" class="content-section">
+            <h2 style="margin-bottom: 20px; color: var(--neon-green);">SUBSCRIPTION LEVELS</h2>
+            <div id="subscriptions-content" class="loading">Loading subscriptions</div>
+        </div>
+
         <!-- Profile Section -->
         <div id="profile" class="content-section">
             <h2 style="margin-bottom: 20px; color: var(--neon-green);">PROFILE</h2>
@@ -336,193 +483,10 @@
         </div>
     </div>
 
+    <script src="/static/js/app.js"></script>
     <script>
-        // Telegram WebApp initialization
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
-
-        const userId = tg.initDataUnsafe?.user?.id || tg.initDataUnsafe?.user?.id;
-
-        // Navigation
-        function showSection(sectionId) {
-            document.querySelectorAll('.content-section').forEach(section => {
-                section.classList.remove('active');
-            });
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            document.getElementById(sectionId).classList.add('active');
-            event.target.classList.add('active');
-
-            // Load section data
-            loadSectionData(sectionId);
-        }
-
-        // Load dashboard data
-        async function loadDashboard() {
-            if (!userId) return;
-            
-            try {
-                const response = await fetch(`/api/dashboard/${userId}`);
-                const data = await response.json();
-                
-                document.getElementById('access-level').textContent = data.subscription_name;
-                document.getElementById('signals-today').textContent = data.signals_today;
-                document.getElementById('referral-count').textContent = data.referral_count;
-            } catch (error) {
-                console.error('Error loading dashboard:', error);
-            }
-        }
-
-        // Load market data
-        async function loadMarket() {
-            try {
-                const response = await fetch('/api/market-pulse');
-                const data = await response.json();
-                
-                if (data.length === 0) {
-                    document.getElementById('market-content').innerHTML = '<p style="color: var(--text-secondary);">No market data available</p>';
-                    return;
-                }
-
-                let html = '<table class="market-table"><thead><tr><th>Symbol</th><th>Exchange</th><th>Price</th><th>Change 24h</th><th>Volume</th></tr></thead><tbody>';
-                
-                data.slice(0, 20).forEach(item => {
-                    const changeClass = item.change_24h >= 0 ? 'positive' : 'negative';
-                    const changeStr = item.change_24h >= 0 ? `+${item.change_24h.toFixed(2)}%` : `${item.change_24h.toFixed(2)}%`;
-                    const volumeStr = formatVolume(item.volume_24h);
-                    
-                    html += `<tr>
-                        <td><strong>${item.symbol}</strong></td>
-                        <td>${item.exchange}</td>
-                        <td>$${item.price.toFixed(2)}</td>
-                        <td class="${changeClass}">${changeStr}</td>
-                        <td>${volumeStr}</td>
-                    </tr>`;
-                });
-                
-                html += '</tbody></table>';
-                document.getElementById('market-content').innerHTML = html;
-            } catch (error) {
-                console.error('Error loading market:', error);
-                document.getElementById('market-content').innerHTML = '<p style="color: #ff4444;">Error loading market data</p>';
-            }
-        }
-
-        // Load profile
-        async function loadProfile() {
-            if (!userId) return;
-            
-            try {
-                const response = await fetch(`/api/user/${userId}`);
-                const data = await response.json();
-                
-                let html = '<div class="profile-info">';
-                html += `<div class="profile-row"><span class="profile-label">Username</span><span class="profile-value">${data.username || data.first_name || 'N/A'}</span></div>`;
-                html += `<div class="profile-row"><span class="profile-label">User ID</span><span class="profile-value">${data.user_id}</span></div>`;
-                html += `<div class="profile-row"><span class="profile-label">Subscription</span><span class="profile-value">${data.subscription_level.toUpperCase()}</span></div>`;
-                html += `<div class="profile-row"><span class="profile-label">Referrals</span><span class="profile-value">${data.referral_count}</span></div>`;
-                html += `<div class="profile-row"><span class="profile-label">Join Date</span><span class="profile-value">${new Date(data.join_date).toLocaleDateString()}</span></div>`;
-                html += '</div>';
-                
-                document.getElementById('profile-content').innerHTML = html;
-            } catch (error) {
-                console.error('Error loading profile:', error);
-            }
-        }
-
-        // Load giveaways
-        async function loadGiveaways() {
-            try {
-                const response = await fetch('/api/giveaways?status=active');
-                const data = await response.json();
-                
-                if (data.length === 0) {
-                    document.getElementById('giveaways-content').innerHTML = '<p style="color: var(--text-secondary);">No active giveaways</p>';
-                    return;
-                }
-
-                let html = '';
-                data.forEach(giveaway => {
-                    html += `<div class="signal-item">
-                        <div class="signal-header">
-                            <div class="signal-symbol">${giveaway.title}</div>
-                            <div class="signal-exchange">${giveaway.status.toUpperCase()}</div>
-                        </div>
-                        <p style="color: var(--text-secondary); margin-top: 10px;">${giveaway.description || ''}</p>
-                        <p style="color: var(--neon-green); margin-top: 10px;">Prize: ${giveaway.prize}</p>
-                    </div>`;
-                });
-                
-                document.getElementById('giveaways-content').innerHTML = html;
-            } catch (error) {
-                console.error('Error loading giveaways:', error);
-            }
-        }
-
-        // Load news
-        async function loadNews() {
-            try {
-                const response = await fetch('/api/news');
-                const data = await response.json();
-                
-                if (data.length === 0) {
-                    document.getElementById('news-content').innerHTML = '<p style="color: var(--text-secondary);">No news available</p>';
-                    return;
-                }
-
-                let html = '';
-                data.forEach(item => {
-                    html += `<div class="signal-item">
-                        <div class="signal-header">
-                            <div class="signal-symbol">${item.title}</div>
-                            <div class="signal-exchange">${new Date(item.published_at).toLocaleDateString()}</div>
-                        </div>
-                        <p style="color: var(--text-secondary); margin-top: 10px;">${item.content}</p>
-                    </div>`;
-                });
-                
-                document.getElementById('news-content').innerHTML = html;
-            } catch (error) {
-                console.error('Error loading news:', error);
-            }
-        }
-
-        // Load section data
-        function loadSectionData(sectionId) {
-            switch(sectionId) {
-                case 'dashboard':
-                    loadDashboard();
-                    break;
-                case 'market':
-                    loadMarket();
-                    break;
-                case 'profile':
-                    loadProfile();
-                    break;
-                case 'giveaways':
-                    loadGiveaways();
-                    break;
-                case 'news':
-                    loadNews();
-                    break;
-            }
-        }
-
-        // Format volume
-        function formatVolume(volume) {
-            if (volume >= 1e9) return (volume / 1e9).toFixed(2) + 'B';
-            if (volume >= 1e6) return (volume / 1e6).toFixed(2) + 'M';
-            if (volume >= 1e3) return (volume / 1e3).toFixed(2) + 'K';
-            return volume.toFixed(2);
-        }
-
-        // Initial load
-        if (userId) {
-            loadDashboard();
-        }
+        tg.setHeaderColor('#0a0a0a');
+        tg.setBackgroundColor('#0a0a0a');
     </script>
 </body>
 </html>

@@ -7,7 +7,9 @@ from .handlers import (
     subscription_callback,
     referral_callback,
     giveaways_callback,
-    main_menu_callback
+    main_menu_callback,
+    buy_pro_callback,
+    buy_premium_callback
 )
 from .admin_handlers import (
     admin_stats_command,
@@ -24,6 +26,8 @@ __all__ = [
     'referral_callback',
     'giveaways_callback',
     'main_menu_callback',
+    'buy_pro_callback',
+    'buy_premium_callback',
     'admin_stats_command',
     'admin_post_command',
     'admin_giveaway_start_command',

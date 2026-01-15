@@ -11,7 +11,7 @@ from datetime import datetime
 from config import DATABASE_PATH, SUBSCRIPTION_LEVELS
 from database import User, MarketSnapshot, Signal, Giveaway, News, Referral
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', static_url_path='/static')
 CORS(app)
 
 
@@ -172,8 +172,11 @@ def get_referral_info(user_id):
             referral_code = user_data.get("referral_code")
             referral_count = await Referral.get_referral_count(db, user_id)
             
-            # Bot username should be configured or extracted from webapp URL
-            bot_username = "your_bot"  # Should be configured in config.py
+            from config import TELEGRAM_BOT_TOKEN
+            import requests
+            bot_info = requests.get(f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getMe").json()
+            bot_username = bot_info.get("result", {}).get("username", "your_bot")
+            
             return {
                 "referral_code": referral_code,
                 "referral_count": referral_count,
@@ -181,6 +184,39 @@ def get_referral_info(user_id):
             }
     
     return jsonify(run_async(fetch_referral()))
+
+@app.route('/api/price-comparison')
+def get_price_comparison():
+    """Get price comparison across 8 exchanges"""
+    from services.market_collector import MarketCollector
+    from services.price_comparison import compare_prices_across_exchanges
+    from config import EXCHANGES
+    
+    top_symbols = ["BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT", "XRP/USDT", "ADA/USDT", "DOGE/USDT", "AVAX/USDT", "DOT/USDT", "MATIC/USDT"]
+    
+    async def fetch_comparison():
+        collector = MarketCollector(EXCHANGES)
+        comparison = await compare_prices_across_exchanges(collector, top_symbols)
+        return comparison
+    
+    return jsonify(run_async(fetch_comparison()))
+
+@app.route('/api/subscription/upgrade', methods=['POST'])
+def upgrade_subscription():
+    """Upgrade user subscription"""
+    data = request.json
+    user_id = data.get('user_id')
+    level = data.get('level')
+    
+    if not user_id or not level:
+        return jsonify({"success": False, "error": "Missing user_id or level"}), 400
+    
+    async def do_upgrade():
+        async with aiosqlite.connect(DATABASE_PATH) as db:
+            await User.update_subscription(db, user_id, level)
+        return {"success": True}
+    
+    return jsonify(run_async(do_upgrade()))
 
 
 if __name__ == '__main__':

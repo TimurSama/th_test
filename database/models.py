@@ -24,10 +24,12 @@ class Database:
                     first_name TEXT,
                     last_name TEXT,
                     subscription_level TEXT DEFAULT 'free',
+                    subscription_expires TIMESTAMP,
                     referral_code TEXT UNIQUE,
                     referred_by INTEGER,
                     join_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    last_notification_time TIMESTAMP,
                     FOREIGN KEY (referred_by) REFERENCES users(user_id)
                 )
             """)
