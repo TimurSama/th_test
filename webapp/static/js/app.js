@@ -599,11 +599,32 @@ function formatVolume(volume) {
 let priceUpdateInterval = null;
 
 function startPriceUpdates() {
-    // Update prices every 30 seconds with Matrix animation
+    // Simulate price changes for demo (in production, this would fetch real data)
+    function simulatePriceChanges() {
+        // Randomly modify prices slightly
+        Object.keys(MARKET_DATA.priceComparison).forEach(symbol => {
+            Object.keys(MARKET_DATA.priceComparison[symbol].prices).forEach(exchange => {
+                const priceData = MARKET_DATA.priceComparison[symbol].prices[exchange];
+                const change = (Math.random() - 0.5) * 0.1; // ±0.05% change
+                priceData.price = priceData.price * (1 + change);
+                priceData.change_24h = (priceData.change_24h || 0) + change;
+            });
+        });
+        
+        // Update market data too
+        MARKET_DATA.market.forEach(item => {
+            const change = (Math.random() - 0.5) * 0.1;
+            item.price = item.price * (1 + change);
+            item.change_24h = (item.change_24h || 0) + change;
+        });
+    }
+    
+    // Update prices every 10 seconds with Matrix animation
     priceUpdateInterval = setInterval(() => {
+        simulatePriceChanges();
         updateDashboardPrices();
         updateMarketPrices();
-    }, 30000);
+    }, 10000);
 }
 
 function updateDashboardPrices() {
