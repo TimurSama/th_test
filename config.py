@@ -51,6 +51,9 @@ HOST = os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", "5000"))
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
+# Enable minute-by-minute notifications (every 1 minute)
+ENABLE_MINUTE_NOTIFICATIONS = os.getenv("ENABLE_MINUTE_NOTIFICATIONS", "true").lower() == "true"
+
 if not TELEGRAM_BOT_TOKEN:
     raise ValueError("TELEGRAM_BOT_TOKEN must be set in environment variables")
 

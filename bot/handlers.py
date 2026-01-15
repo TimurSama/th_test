@@ -87,16 +87,18 @@ async def get_pulse_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
     try:
         comparison = await compare_prices_across_exchanges(market_collector, top_symbols)
         if comparison:
-            message = format_price_table(comparison, top_symbols)
-            message += f"\n\nAccess: {SUBSCRIPTION_LEVELS[level]['name']}"
+            message = format_price_table(comparison, top_symbols, use_html=True)
+            message += f"\n\n<b>Access:</b> {SUBSCRIPTION_LEVELS[level]['name']}"
+            parse_mode = 'HTML'
         else:
             raise Exception("No comparison data")
     except Exception as e:
         logger.error(f"Error getting price comparison: {e}", exc_info=True)
-        message = "MARKET PULSE\n\n"
+        message = "<b>MARKET PULSE</b>\n\n"
         message += "Collecting data from exchanges...\n"
         message += "Please try again in a moment.\n\n"
-        message += f"Access: {SUBSCRIPTION_LEVELS[level]['name']}"
+        message += f"<b>Access:</b> {SUBSCRIPTION_LEVELS[level]['name']}"
+        parse_mode = 'HTML'
     
     keyboard = [
         [InlineKeyboardButton("GET THE PULSE", callback_data="get_pulse")],
@@ -112,10 +114,18 @@ async def get_pulse_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     try:
-        await query.edit_message_text(message, reply_markup=reply_markup)
+        await query.edit_message_text(message, reply_markup=reply_markup, parse_mode=parse_mode)
     except Exception as e:
-        logger.error(f"Error editing message: {e}")
-        await query.message.reply_text(message, reply_markup=reply_markup)
+        logger.warning(f"Failed to edit message with HTML, trying plain text: {e}", exc_info=True)
+        try:
+            # Fallback to plain text
+            if comparison:
+                message = format_price_table(comparison, top_symbols, use_html=False)
+                message += f"\n\nAccess: {SUBSCRIPTION_LEVELS[level]['name']}"
+            await query.edit_message_text(message, reply_markup=reply_markup)
+        except Exception as e2:
+            logger.error(f"Error editing message: {e2}", exc_info=True)
+            await query.message.reply_text(message, reply_markup=reply_markup, parse_mode=parse_mode if 'parse_mode' in locals() else None)
 
 
 async def subscription_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
