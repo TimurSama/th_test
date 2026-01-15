@@ -1,4 +1,8 @@
-const API_BASE = window.location.origin;
+const API_BASE = (typeof CONFIG !== 'undefined' && CONFIG.API_BASE) 
+    ? CONFIG.API_BASE 
+    : (window.location.origin.includes('github.io') 
+        ? 'https://your-api-server.com' 
+        : window.location.origin);
 
 const tg = window.Telegram.WebApp;
 tg.ready();
