@@ -595,13 +595,129 @@ function formatVolume(volume) {
     return volume.toFixed(2);
 }
 
+// Auto-update prices with Matrix animation
+let priceUpdateInterval = null;
+
+function startPriceUpdates() {
+    // Update prices every 30 seconds with Matrix animation
+    priceUpdateInterval = setInterval(() => {
+        updateDashboardPrices();
+        updateMarketPrices();
+    }, 30000);
+}
+
+function updateDashboardPrices() {
+    const priceData = MARKET_DATA.priceComparison;
+    const columns = document.querySelectorAll('.price-column-container');
+    
+    columns.forEach(column => {
+        const symbolName = column.querySelector('.symbol-name');
+        if (!symbolName) return;
+        
+        const symbol = symbolName.textContent + '/USDT';
+        if (!priceData[symbol]) return;
+        
+        const symbolData = priceData[symbol];
+        const sortedExchanges = Object.entries(symbolData.prices)
+            .map(([ex, data]) => ({ exchange: ex, ...data }))
+            .sort((a, b) => a.price - b.price);
+        
+        const priceItems = column.querySelectorAll('.price-item');
+        priceItems.forEach((item, index) => {
+            const exchangeName = item.querySelector('.exchange-name');
+            if (!exchangeName) return;
+            
+            const exchange = exchangeName.textContent.toLowerCase();
+            const exchangeData = sortedExchanges.find(ex => ex.exchange === exchange);
+            
+            if (exchangeData) {
+                const priceValue = item.querySelector('.price-value');
+                const priceChange = item.querySelector('.price-change');
+                
+                if (priceValue) {
+                    const oldPrice = priceValue.textContent;
+                    const newPrice = `$${exchangeData.price.toFixed(2)}`;
+                    if (oldPrice !== newPrice) {
+                        animatePriceUpdate(priceValue, oldPrice, newPrice);
+                    }
+                }
+                
+                if (priceChange) {
+                    const change = exchangeData.change_24h || 0;
+                    const changeClass = change >= 0 ? 'positive' : 'negative';
+                    const changeStr = change >= 0 ? `+${change.toFixed(2)}%` : `${change.toFixed(2)}%`;
+                    const oldChange = priceChange.textContent;
+                    
+                    if (oldChange !== changeStr) {
+                        priceChange.className = `price-change ${changeClass}`;
+                        animatePriceUpdate(priceChange, oldChange, changeStr);
+                    }
+                }
+                
+                item.classList.add('updating');
+                setTimeout(() => {
+                    item.classList.remove('updating');
+                }, 600);
+            }
+        });
+    });
+}
+
+function updateMarketPrices() {
+    const data = MARKET_DATA.market;
+    const rows = document.querySelectorAll('.market-row');
+    
+    rows.forEach(row => {
+        const symbolCell = row.querySelector('td:first-child strong');
+        const exchangeCell = row.querySelector('td:nth-child(2)');
+        if (!symbolCell || !exchangeCell) return;
+        
+        const symbol = symbolCell.textContent;
+        const exchange = exchangeCell.textContent.toLowerCase();
+        const marketItem = data.find(item => 
+            item.symbol === symbol && item.exchange === exchange
+        );
+        
+        if (marketItem) {
+            const priceCell = row.querySelector('.price-cell');
+            const changeCell = row.querySelector('.positive, .negative');
+            
+            if (priceCell) {
+                const oldPrice = priceCell.textContent;
+                const newPrice = `$${marketItem.price.toFixed(2)}`;
+                if (oldPrice !== newPrice) {
+                    animatePriceUpdate(priceCell, oldPrice, newPrice);
+                }
+            }
+            
+            if (changeCell) {
+                const change = marketItem.change_24h;
+                const changeClass = change >= 0 ? 'positive' : 'negative';
+                const changeStr = change >= 0 ? `+${change.toFixed(2)}%` : `${change.toFixed(2)}%`;
+                const oldChange = changeCell.textContent;
+                
+                if (oldChange !== changeStr) {
+                    changeCell.className = changeClass;
+                    animatePriceUpdate(changeCell, oldChange, changeStr);
+                }
+            }
+        }
+    });
+}
+
 // Initialize dashboard when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
-        setTimeout(loadDashboard, 100);
+        setTimeout(() => {
+            loadDashboard();
+            startPriceUpdates();
+        }, 100);
     });
 } else {
-    setTimeout(loadDashboard, 100);
+    setTimeout(() => {
+        loadDashboard();
+        startPriceUpdates();
+    }, 100);
 }
 
 // Initialize dashboard on load
