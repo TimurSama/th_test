@@ -29,10 +29,16 @@ jobs:
         with:
           enablement: true
       
+      - name: Prepare files
+        run: |
+          mkdir -p deploy
+          cp -r webapp/static/* deploy/
+          ls -la deploy/
+      
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'webapp/static'
+          path: 'deploy'
       
       - name: Deploy to GitHub Pages
         id: deployment
