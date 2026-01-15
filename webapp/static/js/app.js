@@ -501,14 +501,34 @@ function loadProfile() {
     const data = MARKET_DATA.user;
     const referralData = MARKET_DATA.referral;
     
+    // Calculate bonuses
+    const referralCount = referralData.referral_count || 0;
+    const freeMonths = Math.floor(referralCount / 10);
+    const usdtBonus = Math.floor(referralCount / 100) * 15;
+    
     let html = '<div class="profile-info">';
     html += `<div class="profile-row"><span class="profile-label">Username</span><span class="profile-value">${data.username || data.first_name || 'N/A'}</span></div>`;
     html += `<div class="profile-row"><span class="profile-label">User ID</span><span class="profile-value">${data.user_id}</span></div>`;
     html += `<div class="profile-row"><span class="profile-label">Subscription</span><span class="profile-value">${data.subscription_level.toUpperCase()}</span></div>`;
-    html += `<div class="profile-row"><span class="profile-label">Referrals</span><span class="profile-value">${data.referral_count}</span></div>`;
     html += `<div class="profile-row"><span class="profile-label">Join Date</span><span class="profile-value">${new Date(data.join_date).toLocaleDateString()}</span></div>`;
+    html += '</div>';
+    
+    html += '<div class="profile-info" style="margin-top: 20px;">';
+    html += '<h3 style="color: var(--neon-green); margin-bottom: 15px;">REFERRAL PROGRAM</h3>';
+    html += `<div class="profile-row"><span class="profile-label">Referrals</span><span class="profile-value">${referralCount}</span></div>`;
     html += `<div class="profile-row"><span class="profile-label">Referral Code</span><span class="profile-value"><code>${referralData.referral_code || 'N/A'}</code></span></div>`;
     html += `<div class="profile-row"><span class="profile-label">Referral Link</span><span class="profile-value"><button class="copy-btn" onclick="copyToClipboard('${referralData.referral_link}')">Copy Link</button></span></div>`;
+    html += '</div>';
+    
+    html += '<div class="profile-info" style="margin-top: 20px; border: 1px solid var(--neon-green); padding: 15px;">';
+    html += '<h3 style="color: var(--neon-green); margin-bottom: 15px;">BONUSES</h3>';
+    html += '<p style="color: var(--text-secondary); margin-bottom: 10px;">• Every 10 referrals → 1 month FREE</p>';
+    html += '<p style="color: var(--text-secondary); margin-bottom: 10px;">• Every 100 referrals → 15 USDT</p>';
+    html += '<div style="margin-top: 15px; padding: 10px; background: var(--bg-darker);">';
+    html += `<p style="color: var(--neon-green); margin-bottom: 5px;"><strong>Earned:</strong></p>`;
+    html += `<p style="color: var(--text-primary);">Free months: ${freeMonths}</p>`;
+    html += `<p style="color: var(--text-primary);">USDT bonus: ${usdtBonus} USDT</p>`;
+    html += '</div>';
     html += '</div>';
     
     document.getElementById('profile-content').innerHTML = html;
