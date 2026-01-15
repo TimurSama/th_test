@@ -42,8 +42,12 @@ def setup_env():
         print(".env file already exists. Skipping creation.")
         return
     
-    # Use provided token or ask user
-    token = os.getenv("TELEGRAM_BOT_TOKEN", "8591869020:AAFnlsirUwd3TKMibAWDE209OBwVU40ZEjo")
+    token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    if not token:
+        token = input("Enter TELEGRAM_BOT_TOKEN: ").strip()
+        if not token:
+            print("Error: TELEGRAM_BOT_TOKEN is required")
+            return
     
     env_content = ENV_TEMPLATE.format(token=token)
     
